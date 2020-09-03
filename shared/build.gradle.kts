@@ -99,3 +99,9 @@ val packForXcode by tasks.creating(Sync::class) {
     into(targetDir)
 }
 tasks.getByName("build").dependsOn(packForXcode)
+
+sqldelight {
+    database("AppDatabase") {
+        packageName = "io.github.ykws.example.kmm.shared.cache"
+    }
+}
