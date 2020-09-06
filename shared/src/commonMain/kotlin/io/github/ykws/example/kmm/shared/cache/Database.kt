@@ -16,7 +16,7 @@ internal class Database(databaseDriverFactory: DatabaseDriverFactory) {
     }
 
     internal fun getAllLaunches(): List<RocketLaunch> {
-        return dbQuery.selectAllLaunchesInfo(::mapLaunchSelecting).excuteAsList()
+        return dbQuery.selectAllLaunchesInfo(::mapLaunchSelecting).executeAsList()
     }
 
     private fun mapLaunchSelecting(
