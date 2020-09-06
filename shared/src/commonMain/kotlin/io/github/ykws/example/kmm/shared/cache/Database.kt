@@ -1,5 +1,7 @@
 package io.github.ykws.example.kmm.shared.cache
 
+import io.github.ykws.example.kmm.shared.entity.Links
+import io.github.ykws.example.kmm.shared.entity.Rocket
 import io.github.ykws.example.kmm.shared.entity.RocketLaunch
 
 internal class Database(databaseDriverFactory: DatabaseDriverFactory) {
@@ -19,11 +21,69 @@ internal class Database(databaseDriverFactory: DatabaseDriverFactory) {
 
     private fun mapLaunchSelecting(
         flightNumber: Long,
-        missionName: String
+        missionName: String,
+        launchYear: Int,
+        rocketId: String,
+        details: String?,
+        launchSuccess: Boolean?,
+        launchDateUTC: String,
+        missionPatchUrl: String?,
+        articleUrl: String?,
+        rocket_id: String?,
+        name: String?,
+        type: String?
     ): RocketLaunch {
         return RocketLaunch(
             flightNumber = flightNumber.toInt(),
-            missionName = missionName
+            missionName = missionName,
+            launchYear = launchYear,
+            details = details,
+            launchSuccess = launchSuccess,
+            launchDateUTC = launchDateUTC,
+            rocket = Rocket(
+                id = rocketId,
+                name = name!!,
+                type = type!!
+            ),
+            links = Links(
+                missionPatchUrl = missionPatchUrl,
+                articleUrl = articleUrl
+            )
+        )
+    }
+
+    internal fun createLaunches(launches: List<RocketLaunch>) {
+        dbQuery.transaction {
+            launches.forEach { launch ->
+                val rocket = dbQuery.selectRocketById(launch.rocket.id).executeAsOneOrNull()
+                if (rocket == null) {
+                    insertRocket(launch)
+                }
+
+                insertLaunch(launch)
+            }
+        }
+    }
+
+    private fun insertRocket(launch: RocketLaunch) {
+        dbQuery.insertRocket(
+            id = launch.rocket.id,
+            name = launch.rocket.name,
+            type = launch.rocket.type
+        )
+    }
+
+    private fun insertLaunch(launch: RocketLaunch) {
+        dbQuery.insertLaunch(
+            flightNumber = launch.flightNumber.toLong(),
+            missionName = launch.missionName,
+            launchYear = launch.launchYear,
+            rocketId = launch.rocket.id,
+            details = launch.details,
+            launchSuccess = launch.launchSuccess ?: false,
+            launchDateUTC = launch.launchDateUTC,
+            missionPatchUrl = launch.links.missionPatchUrl,
+            articleUrl = launch.links.articleUrl
         )
     }
 }
